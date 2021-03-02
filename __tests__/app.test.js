@@ -31,35 +31,67 @@ describe('app routes', () => {
       return client.end(done);
     });
 
-    test('returns animals', async() => {
 
-      const expectation = [
-        {
-          'id': 1,
-          'name': 'bessie',
-          'coolfactor': 3,
-          'owner_id': 1
-        },
-        {
-          'id': 2,
-          'name': 'jumpy',
-          'coolfactor': 4,
-          'owner_id': 1
-        },
-        {
-          'id': 3,
-          'name': 'spot',
-          'coolfactor': 10,
-          'owner_id': 1
-        }
-      ];
+    const todo = {
+      'todo': 'code',
+      'completed': false,
+    };
+
+    const dbTodo = {
+      ...todo,
+      owner_id: 2,
+      id: 4,
+    };
+
+    test('create todo', async() => {
+
+      const todo = {
+        'todo': 'code',
+        'completed': false,
+      };
 
       const data = await fakeRequest(app)
-        .get('/animals')
+        .post('/api/todos')
+        .send(todo)
+        .set('Authorization', token)
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(data.body).toEqual(expectation);
+      expect(data.body).toEqual([dbTodo]);
+    });
+
+    test('return all todos from a given user', async() => {
+     
+
+      const data = await fakeRequest(app)
+        .get('/api/todos')
+        .set('Authorization', token)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual([dbTodo]);
+    });
+
+    test('updates completed on a specified todo', async() => {
+      
+      const todo = {
+        'completed': true
+      };
+      const putTodo = {
+        'todo': 'code',
+        ...todo,
+        owner_id: 2,
+        id: 4,
+
+      };
+      const data = await fakeRequest(app)
+        .put('/api/todos/4')
+        .send(todo)
+        .set('Authorization', token)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual([putTodo]);
     });
   });
 });
